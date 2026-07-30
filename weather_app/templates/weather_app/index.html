@@ -1,0 +1,148 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Check real-time weather forecasts, current conditions, and a 5-day outlook for any city in the world.">
+    <title>Nimbus Weather - Dynamic Forecasting System</title>
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="{% static 'weather_app/styles.css' %}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header & Search -->
+        <header>
+            <div class="logo-section">
+                <h1 id="main-heading">Nimbus Forecast</h1>
+                <p>Real-time atmospheric insights and predictions</p>
+            </div>
+            
+            <div class="search-container">
+                <form action="{% url 'index' %}" method="get" class="search-form" id="search-weather-form">
+                    <input 
+                        type="text" 
+                        name="city" 
+                        class="search-input" 
+                        placeholder="Search city (e.g. Tokyo, Paris...)" 
+                        value="{{ search_query|default:'' }}"
+                        required
+                        id="city-search-input"
+                    >
+                    <button type="submit" class="search-button" id="search-submit-btn">Search</button>
+                </form>
+            </div>
+
+            <!-- Recent Search History -->
+            {% if history %}
+            <div class="history-section" id="search-history-container">
+                <span class="history-title">Recent:</span>
+                {% for past_city in history %}
+                <a href="{% url 'index' %}?city={{ past_city|urlencode }}" class="history-chip" id="history-chip-{{ forloop.counter }}">{{ past_city }}</a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </header>
+
+        <!-- Error Notification -->
+        {% if error %}
+        <div class="alert-error" id="error-message-box">
+            <strong>Notice:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        <!-- Dashboard Main Grid -->
+        <main class="dashboard-grid">
+            <!-- Left Panel: Current Weather -->
+            <section class="glass-card current-card" id="current-weather-panel">
+                <div class="location-title">
+                    <h2 id="weather-location-city">{{ city }}</h2>
+                    <span class="country" id="weather-location-country">{{ country }}</span>
+                </div>
+                
+                <div class="weather-hero">
+                    <div class="weather-emoji" id="weather-icon-emoji" aria-label="{{ current.desc }}">{{ current.emoji }}</div>
+                    <div class="temperature" id="current-temp-value">
+                        {{ current.temp }}<span class="temp-unit">°C</span>
+                    </div>
+                </div>
+
+                <div class="weather-meta">
+                    <div class="weather-desc" id="weather-desc-text">{{ current.desc }}</div>
+                    <div class="feels-like" id="apparent-temp-value">Feels like {{ current.feels_like }}°C</div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Weather Details & Forecast -->
+            <section class="detail-grid-container">
+                <!-- Details Grid -->
+                <div class="details-grid" id="weather-details-grid">
+                    <!-- Humidity Card -->
+                    <div class="detail-card" id="humidity-detail-card">
+                        <div class="detail-icon">💧</div>
+                        <div class="detail-label">Humidity</div>
+                        <div class="detail-value" id="humidity-value">{{ current.humidity }}%</div>
+                    </div>
+                    <!-- Wind Card -->
+                    <div class="detail-card" id="wind-detail-card">
+                        <div class="detail-icon">💨</div>
+                        <div class="detail-label">Wind Speed</div>
+                        <div class="detail-value" id="wind-value">{{ current.wind_speed }} km/h</div>
+                    </div>
+                    <!-- Pressure Card -->
+                    <div class="detail-card" id="pressure-detail-card">
+                        <div class="detail-icon">🧭</div>
+                        <div class="detail-label">Pressure</div>
+                        <div class="detail-value" id="pressure-value">{{ current.pressure }} hPa</div>
+                    </div>
+                </div>
+
+                <!-- Sun Panel -->
+                <div class="sun-panel" id="sun-times-panel">
+                    <div class="sun-item" id="sunrise-time-item">
+                        <span class="sun-icon">🌅</span>
+                        <div class="sun-info">
+                            <span class="sun-label">Sunrise</span>
+                            <span class="sun-time" id="sunrise-value">{{ current.sunrise }}</span>
+                        </div>
+                    </div>
+                    <div class="sun-item" id="sunset-time-item">
+                        <span class="sun-icon">🌇</span>
+                        <div class="sun-info">
+                            <span class="sun-label">Sunset</span>
+                            <span class="sun-time" id="sunset-value">{{ current.sunset }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5-Day Forecast -->
+                {% if forecast %}
+                <div class="forecast-section" id="five-day-forecast-section">
+                    <h3 class="forecast-title">5-Day Outlook</h3>
+                    <div class="forecast-container" id="forecast-cards-container">
+                        {% for day in forecast %}
+                        <div class="forecast-card" id="forecast-day-card-{{ forloop.counter }}">
+                            <div class="forecast-day-info">
+                                <span class="forecast-day">{{ day.day }}</span>
+                                <span class="forecast-date">{{ day.date }}</span>
+                            </div>
+                            <span class="forecast-emoji" title="{{ day.desc }}">{{ day.emoji }}</span>
+                            <div class="forecast-temp">
+                                <span class="forecast-temp-max" title="High temperature">{{ day.max_temp }}°C</span>
+                                <span class="forecast-temp-min" title="Low temperature">{{ day.min_temp }}°C</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <p>Powered by keyless <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo API</a>. Designed with Glassmorphism.</p>
+        </footer>
+    </div>
+</body>
+</html>
